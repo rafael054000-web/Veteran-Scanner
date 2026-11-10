@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+build/
+dist/
+*.spec
+*.egg-info/
+.venv/
+veteran_*.json
+veteran_*.txt
+VeteranScanner.exe

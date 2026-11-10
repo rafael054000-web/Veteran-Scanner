@@ -1,9 +1,0 @@
-__pycache__/
-*.pyc
-build/
-dist/
-*.spec
-*.egg-info/
-.venv/
-fairscan_*.json
-fairscan_*.txt

@@ -1,0 +1,90 @@
+name: Gerar VeteranScanner.exe
+
+# A cada envio para a branch main, o GitHub gera o VeteranScanner.exe a partir do código público,
+# testa o executável num Windows de verdade e publica na release "latest".
+# Tags no formato v1.2.3 também geram uma release fixa daquela versão.
+#
+# Link permanente do executável mais recente:
+#   https://github.com/<usuario>/<repositorio>/releases/latest/download/VeteranScanner.exe
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Testes
+        run: python -m unittest discover -s tests -v
+
+      - name: Gerar executável
+        run: |
+          python -m pip install pyinstaller==6.11.1
+          pyinstaller --onefile --name VeteranScanner --console --add-data "veteran_scanner/data;veteran_scanner/data" run_veteran_scanner.py
+
+      - name: Testar o executável neste Windows
+        shell: pwsh
+        run: |
+          .\dist\VeteranScanner.exe --version
+          if ($LASTEXITCODE -ne 0) { throw "--version falhou" }
+          # Scan real e completo (processos, registro, arquivos), respondendo ao termo automaticamente.
+          "ACEITO`ns`nCI`nLiga CI`nn`n`n" | .\dist\VeteranScanner.exe --offline --no-color
+          $code = $LASTEXITCODE
+          Write-Host "Código de saída do scan: $code"
+          if ($code -gt 2) { throw "o scan terminou com erro ($code)" }
+
+      - name: Calcular SHA256
+        shell: pwsh
+        run: |
+          $h = (Get-FileHash dist/VeteranScanner.exe -Algorithm SHA256).Hash.ToLower()
+          "$h  VeteranScanner.exe" | Out-File -Encoding ascii dist/SHA256SUMS.txt
+          Get-Content dist/SHA256SUMS.txt
+
+      - name: Mover a tag "latest" para este commit
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git tag -f latest
+          git push -f origin latest
+
+      - name: Publicar release "latest"
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Veteran Scanner (versão mais recente)
+          make_latest: true
+          files: |
+            dist/VeteranScanner.exe
+            dist/SHA256SUMS.txt
+          body: |
+            Executável gerado automaticamente pelo GitHub Actions a partir do commit ${{ github.sha }}.
+            Não precisa instalar Python: baixe o `VeteranScanner.exe` e dê dois cliques.
+            Confira o SHA256 em `SHA256SUMS.txt`. Ele deve ser igual ao campo `scanner.fingerprint`
+            dos relatórios gerados com este executável.
+
+      - name: Publicar release da versão
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          make_latest: false
+          files: |
+            dist/VeteranScanner.exe
+            dist/SHA256SUMS.txt
+          body: |
+            Versão fixa gerada pelo GitHub Actions a partir da tag ${{ github.ref_name }}.
+            Confira o SHA256 em `SHA256SUMS.txt`.
