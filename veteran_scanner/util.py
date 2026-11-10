@@ -78,6 +78,7 @@ class Env:
     temp: Optional[Path]
     windir: Optional[Path]
     program_files: List[Path] = field(default_factory=list)
+    drives: List[Path] = field(default_factory=list)
     simulated: bool = False
 
     @classmethod
@@ -94,6 +95,7 @@ class Env:
             temp=p("TEMP"),
             windir=p("WINDIR") or (Path("C:/Windows") if IS_WINDOWS else None),
             program_files=pf,
+            drives=[Path(f"{c}:\\") for c in "CDEFGHIJKLMNOPQRSTUVWXYZ" if os.path.isdir(f"{c}:\\")] if IS_WINDOWS else [],
         )
 
     @classmethod
@@ -108,6 +110,7 @@ class Env:
             temp=user / "AppData" / "Local" / "Temp",
             windir=root / "Windows",
             program_files=[root / "Program Files", root / "Program Files (x86)"],
+            drives=[root],
             simulated=True,
         )
 

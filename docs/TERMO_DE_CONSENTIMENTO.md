@@ -10,9 +10,11 @@ contato]**, declaro que:
 1. **Entendo e aceito** que a organização pode pedir, antes, durante ou depois das partidas, que eu rode o
    scanner **Veteran Scanner** (código aberto em [link do repositório]) no computador que uso para jogar.
 
-2. **Sei o que é verificado:** arquivos de Fast Flags do Roblox e de bootstrappers; nomes de arquivos e pastas em
-   Downloads, Área de Trabalho, Documentos, AppData e Temp; nomes de arquivos na pasta do Roblox; processos em
-   execução; rastros de execução do Windows (Prefetch, Itens Recentes, registro); e logs do Roblox.
+2. **Sei o que é verificado:** arquivos de Fast Flags e de configuração do Roblox e de bootstrappers; nomes de
+   arquivos e pastas em Downloads, Área de Trabalho, Documentos, AppData e Temp; arquivos .json/.txt pequenos nessas
+   pastas, só para achar listas de Fast Flags; nomes de arquivos na pasta do Roblox; processos em execução; rastros de
+   execução do Windows (Prefetch, Itens Recentes, registro); nomes de itens na Lixeira e de arquivos apagados ou
+   renomeados recentemente (USN Journal); e logs do Roblox.
 
 3. **Sei o que NÃO é feito:** o scanner não abre meus documentos, fotos, senhas, cookies ou conversas; não modifica nem
    apaga nada; não lê a memória do Roblox; e não envia dados automaticamente pela internet.

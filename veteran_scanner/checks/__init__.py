@@ -1,5 +1,6 @@
 """Todas as verificações são somente leitura."""
 
-from . import fflags, filesystem, logs, prefetch, processes, recent, registry, roblox_install
+from . import (fflags, filesystem, logs, prefetch, processes, recent, recyclebin, registry, roblox_install,
+               storedflags, usn)
 
-ALL = [fflags, roblox_install, filesystem, processes, prefetch, registry, recent, logs]
+ALL = [fflags, storedflags, roblox_install, filesystem, processes, prefetch, registry, recent, recyclebin, usn, logs]

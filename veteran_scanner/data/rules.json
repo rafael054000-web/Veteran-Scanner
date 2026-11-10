@@ -1,5 +1,5 @@
 {
-  "version": "1",
+  "version": "2",
   "_comment": "Regras padrão. O organizador pode sobrescrever qualquer valor com --rules minha_liga.json (só as chaves que mudarem). Severidades: info, low, medium, high, critical.",
   "category_severity": {
     "executor": "high",
@@ -16,12 +16,16 @@
     "unlisted_severity": "low",
     "unknown_allowlist_severity": "low",
     "known_abuse_severity": "high",
-    "suspicious_pattern_severity": "medium"
+    "suspicious_pattern_severity": "medium",
+    "stored_abuse_severity": "medium",
+    "stored_suspicious_severity": "low"
   },
   "executor_folder_layout_severity": "high",
   "proxy_dll_severity": "medium",
   "log_mention_severity": "low",
   "missing_logs_severity": "low",
   "running_now_bonus": true,
-  "since_downgrade": true
+  "since_downgrade": true,
+  "deleted_fflag_file_severity": "medium",
+  "prefetch_wipe_severity": "medium"
 }

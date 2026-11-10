@@ -75,7 +75,7 @@ def _scan_args(s: argparse.ArgumentParser) -> None:
     s.add_argument("--player", help="seu nick na liga")
     s.add_argument("--event", default="", help="nome da liga")
     s.add_argument("--since", type=parse_since, help="início da liga; achados mais antigos pesam menos (AAAA-MM-DD)")
-    s.add_argument("--output", type=Path, default=Path("."), help="pasta onde salvar o relatório (padrão: atual)")
+    s.add_argument("--output", type=Path, default=None, help="pasta onde salvar o relatório (padrão: pasta do programa)")
     s.add_argument("--offline", action="store_true", help="não baixa a allowlist oficial de Fast Flags")
     s.add_argument("--allowlist-file", type=Path, help="usa uma allowlist local (JSON ou um nome por linha)")
     s.add_argument("--rules", type=Path, help="regras da liga (JSON que sobrescreve data/rules.json)")
@@ -84,11 +84,19 @@ def _scan_args(s: argparse.ArgumentParser) -> None:
     s.add_argument("--root", type=Path, help=argparse.SUPPRESS)  # árvore de Windows simulada (testes/demonstração)
 
 
+def default_output_dir() -> Path:
+    """Pasta do VeteranScanner.exe. "Executar como administrador" muda a pasta atual para System32."""
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).resolve().parent
+    return Path.cwd()
+
+
 def run_checks(ctx: Context, ui: UI) -> List[CheckResult]:
     results = []
     for mod in ALL:
         label = mod.LABEL
-        ui.print(ui.c("  › ", "yellow") + label + ui.c(" …", "gray"))
+        hint = getattr(mod, "HINT", "")
+        ui.print(ui.c("  › ", "yellow") + label + ui.c(f" ({hint}) …" if hint else " …", "gray"))
         start = time.time()
         try:
             r = mod.run(ctx)
@@ -130,8 +138,16 @@ def print_summary(ui: UI, report: dict) -> None:
 
 def cmd_scan(args, input_fn=input) -> int:
     ui = UI(color=not args.no_color)
-    ui.print(ui.c(BANNER, "yellow"))
-    ui.print(ui.c(f"  v{__version__} — scanner open source com consentimento para ligas de Roblox", "gray"))
+    ui.clear()
+    ui.set_title(f"VETERAN SCANNER v{__version__}")
+    ui.box([
+        (f"VETERAN SCANNER  v{__version__}", "bold", "yellow"),
+        "",
+        "Verificação de integridade da liga",
+        ("Somente leitura · com consentimento · open source", "gray"),
+    ])
+    ui.print(ui.c(BANNER, "bold", "yellow"))
+    ui.print()
 
     if args.root:
         env = Env.from_root(args.root)
@@ -164,10 +180,13 @@ def cmd_scan(args, input_fn=input) -> int:
         return EXIT_ERROR
 
     ui.title("Preparando")
-    names, source = None, "desativada (--offline)"
     if args.allowlist_file:
         names, source = allowlist_mod.load_file(args.allowlist_file)
-    elif not args.offline:
+    elif args.offline:
+        names, source = allowlist_mod.load_bundled()
+        if not names:
+            source = "desativada (--offline)"
+    else:
         ui.print("  Baixando a allowlist pública de Fast Flags do Roblox…")
         names, source = allowlist_mod.fetch_online()
     ui.print(f"  Allowlist: {source}" + (f" — {len(names)} flags" if names else ""))
@@ -205,7 +224,7 @@ def cmd_scan(args, input_fn=input) -> int:
     ui.print()
 
     if ui.yes_no("Salvar o relatório nesta pasta para enviar à organização?", default=True, input_fn=input_fn):
-        out_dir = args.output
+        out_dir = args.output or default_output_dir()
         out_dir.mkdir(parents=True, exist_ok=True)
         stamp = _dt.datetime.now().strftime("%Y%m%d-%H%M%S")
         base = out_dir / f"veteran_{safe_filename(player)}_{stamp}"

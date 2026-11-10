@@ -25,7 +25,9 @@ A forma mais confiável é em **chamada com compartilhamento de tela** (Discord,
 1. O jogador compartilha a tela inteira.
 2. Baixa o `VeteranScanner.exe` da release fixada pela liga **durante a chamada**, ou mostra o SHA256 da cópia que já tem
    (`certutil -hashfile VeteranScanner.exe SHA256`).
-3. Executa como administrador, com `--since` igual à data de início da liga.
+3. Executa como administrador. O jeito mais fácil é o comando de uma linha do README (`irm ... | iex`) num
+   PowerShell aberto como administrador. Sem administrador, o USN Journal, o Prefetch e o BAM ficam de fora, e eles
+   são os mais importantes para verificações no mesmo dia da partida.
 4. **Anote o código de verificação** (ex.: `3558-15DA`) mostrado no final.
 5. O jogador envia o `.json`. Você confere:
    ```
@@ -53,6 +55,11 @@ Sem a chamada ao vivo, o relatório ainda serve como indício, mas é mais fáci
 | Prefetch / BAM / UserAssist de executor | Forte | Mostra que o programa **foi executado**. Veja a data em relação à liga. |
 | Estrutura `autoexec` + `workspace` | Forte | Típica de executor, mesmo com o programa renomeado. |
 | Arquivo/pasta com nome de executor | Médio a forte | Pode ser só um download. Veja datas e caminho. |
+| Executor ou `autoexec` **apagado/renomeado** (USN Journal ou Lixeira) | Forte | Principalmente se a data for entre a partida e a verificação. |
+| `ClientAppSettings.json` apagado (USN Journal ou Lixeira) | Médio | Pode ser tentativa de esconder flags, mas também acontece quando o Roblox atualiza. Compare com a data da partida e com as pastas de versão. |
+| Prefetch apagado em massa | Médio | Forma comum de esconder rastros. |
+| Flag de vantagem em `IxpSettings.json`/perfil de bootstrapper | Forte | Editar arquivos de cache do Roblox é modificação do cliente. |
+| Lista de flags guardada com flag de vantagem | Médio | Mostra acesso às flags, não prova uso. |
 | Fast Flag associada a abuso **na allowlist** | Forte | Tem efeito real no jogo. |
 | Fast Flag associada a abuso **fora da allowlist** | Médio | O Roblox ignora; só teria efeito com programa externo. Mostra intenção. |
 | Flags fora da allowlist (comuns) | Fraco | Geralmente sobra de configurações antigas do Bloxstrap. Decida pelo regulamento. |

@@ -5,43 +5,56 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import List
+from typing import List, Tuple
 
 from ..allowlist import FLAG_RE, strip_prefix
 from ..util import file_times, newest, walk_limited
 from .base import CheckResult, Context
 
-ID, LABEL = "fflags", "Fast Flags (ClientAppSettings.json)"
+ID, LABEL = "fflags", "Fast Flags (Roblox e bootstrappers)"
 EXTRA_BOOTSTRAPPERS = {"roblox", "rbxfpsunlocker"}
 SKIP = {"logs", "http", "rbx-storage", "localstorage", "downloads", "sounds", "textures", "content", "platformcontent", "extracontent", "shaders"}
 MAX_LISTED = 300
 
 
-def candidate_files(ctx: Context) -> List[Path]:
+MAX_OTHER_JSON = 2_000_000
+
+
+def candidate_files(ctx: Context) -> List[Tuple[Path, bool]]:
+    """Retorna (arquivo, ativo). Ativo = ClientAppSettings.json; os outros são JSONs de configuração
+    do Roblox (ex.: IxpSettings.json) e dos bootstrappers (perfis, backups), onde só procuramos flags de abuso."""
     env = ctx.env
-    roots: List[Path] = []
+    roots: List[Tuple[Path, bool]] = []  # (raiz, é bootstrapper)
     if env.local_appdata and env.local_appdata.is_dir():
         try:
             for e in os.scandir(env.local_appdata):
                 n = e.name.lower()
                 if e.is_dir() and (n.endswith("strap") or n in EXTRA_BOOTSTRAPPERS):
-                    roots.append(Path(e.path))
+                    roots.append((Path(e.path), n.endswith("strap")))
         except OSError:
             pass
     for pf in env.program_files:
-        roots.append(pf / "Roblox")
+        roots.append((pf / "Roblox", False))
     files = {}
-    for r in roots:
+    for r, is_strap in roots:
         if not r.is_dir():
             continue
         for e, _ in walk_limited(r, max_depth=5, max_entries=30000, skip_dirs=SKIP):
-            if e.name.lower() == "clientappsettings.json":
-                try:
-                    if e.is_file():
-                        files[str(Path(e.path)).lower()] = Path(e.path)
-                except OSError:
-                    pass
-    return sorted(files.values(), key=lambda p: str(p).lower())
+            name = e.name.lower()
+            if not name.endswith(".json"):
+                continue
+            try:
+                if not e.is_file():
+                    continue
+                size = e.stat().st_size
+            except OSError:
+                continue
+            p = Path(e.path)
+            if name == "clientappsettings.json":
+                files[str(p).lower()] = (p, True)
+            elif size <= MAX_OTHER_JSON and (is_strap or p.parent.name.lower() == "clientsettings"):
+                files.setdefault(str(p).lower(), (p, False))
+    return sorted(files.values(), key=lambda x: str(x[0]).lower())
 
 
 def _load(path: Path):
@@ -53,21 +66,26 @@ def run(ctx: Context) -> CheckResult:
     res = CheckResult(ID, LABEL)
     fr = ctx.rules.get("fflags", {})
     files = candidate_files(ctx)
-    res.stats = {"arquivos": len(files), "allowlist": ctx.allowlist_source,
+    res.stats = {"arquivos_ativos": sum(1 for _, a in files if a), "outros_json": sum(1 for _, a in files if not a), "allowlist": ctx.allowlist_source,
                  "allowlist_tamanho": len(ctx.allowlist) if ctx.allowlist else 0}
-    if ctx.allowlist is None:
+    if ctx.allowlist is None and any(a for _, a in files):
         res.note = "Allowlist oficial indisponível: não foi possível dizer quais flags têm efeito real."
 
-    for path in files:
+    for path, active in files:
         created, modified = file_times(path)
         ts = newest(created, modified)
         where = ctx.sanitize.path(path)
         try:
             data = _load(path)
         except (OSError, ValueError) as ex:
+            if not active:
+                continue
             res.findings.append(ctx.finding(ID, "low", "Arquivo de Fast Flags ilegível ou malformado",
                                             f"Não foi possível ler o JSON ({type(ex).__name__}). Pode ser corrupção ou edição manual.",
                                             {"arquivo": where}, ts))
+            continue
+        if not active:
+            _scan_other(ctx, res, data, where, ts)
             continue
         if not isinstance(data, dict) or not data:
             res.findings.append(ctx.finding(ID, "info", "Arquivo de Fast Flags vazio", "Nenhuma flag definida.",
@@ -127,6 +145,30 @@ def run(ctx: Context) -> CheckResult:
                                             "Chaves fora do padrão FFlag/FInt/FString/FLog.",
                                             {"arquivo": where, "chaves": not_flags[:50]}, ts))
     return res
+
+
+def _scan_other(ctx: Context, res: CheckResult, data, where: str, ts) -> None:
+    """JSON que não é o arquivo ativo: só interessa se tiver flags associadas a abuso."""
+    from ..allowlist import extract_flag_names
+
+    fr = ctx.rules.get("fflags", {})
+    for key in sorted(extract_flag_names(data)):
+        low = key.lower()
+        if low in ctx.flag_rules.known:
+            sev, title, why = fr.get("known_abuse_severity", "high"), f"Fast Flag associada a vantagem em {_short(where)}: {key}", ctx.flag_rules.known[low]
+        elif any(p.search(key) for p in ctx.flag_rules.patterns):
+            sev, title, why = fr.get("suspicious_pattern_severity", "medium"), f"Fast Flag com nome suspeito em {_short(where)}: {key}", "O nome sugere relação com rede/física/hitbox."
+        else:
+            continue
+        res.findings.append(ctx.finding(
+            ID, sev, title,
+            f"{why} Encontrada num arquivo de configuração do Roblox/bootstrapper (perfil, backup ou cache). "
+            "Editar arquivos de cache do Roblox também é considerado modificação do cliente.",
+            {"arquivo": where, "flag": key}, ts))
+
+
+def _short(where: str) -> str:
+    return where.replace("\\", "/").rsplit("/", 1)[-1]
 
 
 def _effect_text(ctx: Context, key: str) -> str:

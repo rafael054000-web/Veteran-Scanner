@@ -46,6 +46,32 @@ class UI:
             return text
         return "".join(_COLORS[s] for s in styles) + text + _COLORS["reset"]
 
+    def clear(self) -> None:
+        if sys.stdout.isatty():
+            os.system("cls" if IS_WINDOWS else "clear")
+
+    def set_title(self, title: str) -> None:
+        if IS_WINDOWS:
+            try:
+                import ctypes
+
+                ctypes.windll.kernel32.SetConsoleTitleW(title)  # type: ignore[attr-defined]
+            except Exception:
+                pass
+        elif sys.stdout.isatty():
+            sys.stdout.write(f"\033]0;{title}\007")
+
+    def box(self, lines, width: int = 64, style: str = "yellow") -> None:
+        """Caixa com bordas arredondadas. Cada linha: texto ou (texto, estilos...)."""
+        inner = width - 4
+        self.print(self.c("╭" + "─" * (width - 2) + "╮", style))
+        for item in lines:
+            text, styles = (item, ()) if isinstance(item, str) else (item[0], item[1:])
+            text = text[:inner]
+            pad = " " * (inner - len(text))
+            self.print(self.c("│ ", style) + (self.c(text, *styles) if styles else text) + pad + self.c(" │", style))
+        self.print(self.c("╰" + "─" * (width - 2) + "╯", style))
+
     def print(self, text: str = "") -> None:
         print(text, flush=True)
 

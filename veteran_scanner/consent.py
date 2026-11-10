@@ -15,17 +15,22 @@ Este programa verifica o seu computador em busca de sinais de programas e config
 proibidos pelo regulamento da liga (executores, injetores, Fast Flags etc.).
 
 O QUE ELE LÊ (somente leitura):
-  • Arquivos de Fast Flags do Roblox e de bootstrappers (ClientAppSettings.json)
+  • Arquivos de Fast Flags e de configuração do Roblox e de bootstrappers
   • NOMES de arquivos e pastas em Downloads, Área de Trabalho, Documentos, AppData e Temp
+  • Arquivos .json/.txt pequenos (até 1 MB) nessas pastas, só para achar listas de
+    Fast Flags (o relatório mostra apenas as flags, nunca o resto do texto)
   • Arquivos dentro da pasta de instalação do Roblox (só os nomes)
   • Lista de processos abertos agora
   • Rastros de execução do Windows: Prefetch, Itens Recentes e registro
     (MuiCache, UserAssist, Compatibility Assistant, BAM)
+  • NOMES de arquivos na Lixeira e de arquivos apagados/renomeados recentemente
+    (diário do NTFS / USN Journal)
   • Logs do Roblox (o conteúdo NÃO vai para o relatório, só termos encontrados)
 
 O QUE ELE NÃO FAZ:
   • Não lê a memória nem interage com o processo do Roblox
   • Não abre seus documentos, fotos, senhas, cookies ou conversas
+  • Não recupera o conteúdo de arquivos apagados
   • Não modifica, move nem apaga nada
   • Não envia nada pela internet. A única conexão é para baixar a lista PÚBLICA de
     Fast Flags permitidas do servidor do Roblox (use --offline para desativar)

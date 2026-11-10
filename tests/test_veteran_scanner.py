@@ -17,7 +17,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from veteran_scanner import allowlist as al  # noqa: E402
-from veteran_scanner.checks import fflags, filesystem, logs, prefetch, processes, recent, registry, roblox_install  # noqa: E402
+from veteran_scanner.checks import (fflags, filesystem, logs, prefetch, processes, recent, recyclebin,  # noqa: E402
+                                    registry, roblox_install, storedflags, usn)
 from veteran_scanner.checks.base import Context  # noqa: E402
 from veteran_scanner.cli import main  # noqa: E402
 from veteran_scanner.report import build_report, verify_report  # noqa: E402
@@ -197,6 +198,64 @@ class TestOtherChecks(Base):
         r = registry.run(self.ctx(), collector=collector)
         self.assertEqual(sorted(f.evidence["assinatura"] for f in r.findings), ["bloxstrap", "solara"])
         self.assertNotIn("player", json.dumps([f.to_dict() for f in r.findings]))
+
+
+class TestDeletedAndStored(Base):
+    @staticmethod
+    def index_v2(path: str, ft: int = 133700000000000000) -> bytes:
+        import struct
+        raw = (path + "\x00").encode("utf-16-le")
+        return struct.pack("<qqQI", 2, 1234, ft, len(raw) // 2) + raw
+
+    def test_recyclebin(self):
+        sid = self.tmp / "$Recycle.Bin" / "S-1-5-21-1"
+        sid.mkdir(parents=True)
+        (sid / "$IABC123.exe").write_bytes(self.index_v2(r"C:\Users\player\Downloads\Solara.exe"))
+        (sid / "$IDEF456.json").write_bytes(self.index_v2(r"C:\Users\player\AppData\Local\Roblox\Versions\v\ClientSettings\ClientAppSettings.json"))
+        (sid / "$IGHI789.docx").write_bytes(self.index_v2(r"C:\Users\player\Documents\trabalho.docx"))
+        r = recyclebin.run(self.ctx())
+        self.assertEqual(r.stats["itens_na_lixeira"], 3)
+        self.assertEqual(sorted(f.severity for f in r.findings), ["high", "medium"])
+        self.assertNotIn("player", json.dumps([f.to_dict() for f in r.findings]))
+
+    def test_usn_parse_and_findings(self):
+        lines = [
+            "Usn,File name,File name length,Reason,Time stamp,File attributes,File ID,Parent file ID",
+            "123,Solara.exe,20,0x80000200: File delete | Close,10/11/2026 18:00:00,0x20,1,2",
+            "124,ClientAppSettings.json,44,0x80000200: File delete | Close,10/11/2026 18:01:00,0x20,1,2",
+            "125,notes.txt,18,0x80000200: File delete | Close,10/11/2026 18:02:00,0x20,1,2",
+            "126,Xeno.exe,16,0x00001000: Rename old name,10/11/2026 18:03:00,0x20,1,2",
+            "127,Solara.exe,20,0x00000002: Data extend,10/11/2026 18:04:00,0x20,1,2",
+        ] + [f"{200+i},CHROME.EXE-{i:08X}.pf,30,0x80000200: File delete | Close,10/11/2026 18:05:00,0x20,1,2" for i in range(12)]
+        r = usn.run(self.ctx(), reader=lambda drive: lines)
+        titles = [f.title for f in r.findings]
+        self.assertTrue(any("Solara" in t and "apagado" in t for t in titles))
+        self.assertTrue(any("ClientAppSettings.json" in t for t in titles))
+        self.assertTrue(any("Xeno" in t and "renomeado" in t for t in titles))
+        self.assertTrue(any("Prefetch" in t for t in titles))
+        self.assertFalse(any("notes" in t for t in titles))
+        self.assertEqual(r.stats["registros_lidos"], 17)
+
+    def test_usn_timestamp(self):
+        ts = usn.parse_timestamp("10/11/2026 18:00:00", day_first=True)
+        import datetime as dt
+        self.assertEqual(dt.datetime.fromtimestamp(ts).month, 11)
+
+    def test_stored_flag_list(self):
+        touch(self.env.userprofile / "Downloads" / "flags_pvp.json",
+              json.dumps({"DFIntS2PhysicsSenderRate": "1", "FIntA": "1", "FFlagB": "True"}))
+        touch(self.env.userprofile / "Documents" / "flags.txt", '"FFlagExampleOne": "True",\n"FIntExampleTwo": "2",\n"DFIntExampleThree": "3"')
+        touch(self.env.userprofile / "Documents" / "receita.txt", "farinha: 2 xícaras")
+        r = storedflags.run(self.ctx())
+        self.assertEqual(sorted(f.severity for f in r.findings), ["info", "medium"])
+
+    def test_ixpsettings_abuse_flag(self):
+        touch(self.roblox / "ClientSettings" / "IxpSettings.json",
+              json.dumps({"FFlagNormalExperiment": True, "DFIntS2PhysicsSenderRate": 1}))
+        r = fflags.run(self.ctx(allow=set()))
+        self.assertEqual(len(r.findings), 1)
+        self.assertEqual(r.findings[0].severity, "high")
+        self.assertIn("IxpSettings.json", r.findings[0].title)
 
 
 class TestReport(Base):

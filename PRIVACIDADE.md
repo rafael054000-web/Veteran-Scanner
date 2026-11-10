@@ -10,6 +10,11 @@ O Veteran Scanner foi feito para coletar **o mínimo necessário**.
 - Nomes de processos em execução.
 - Rastros de execução do Windows (Prefetch, Itens Recentes, registro). Só os itens que batem com assinaturas
   conhecidas vão para o relatório.
+- Arquivos `.json`/`.txt` de até 1 MB em Downloads, Área de Trabalho e Documentos, só para encontrar listas de Fast
+  Flags. Apenas os nomes das flags encontradas vão para o relatório.
+- Índice da Lixeira (`$I`): nome original e data da exclusão. O conteúdo apagado não é lido nem recuperado.
+- Diário do NTFS (USN Journal) da unidade do sistema, via `fsutil`: nomes de arquivos apagados ou renomeados. Só os
+  itens que batem com assinaturas, arquivos de Fast Flags ou limpeza do Prefetch vão para o relatório.
 - Logs do Roblox, procurando nomes de programas conhecidos. Só o termo encontrado e o nome do arquivo de log vão para o
   relatório, nunca o conteúdo.
 
