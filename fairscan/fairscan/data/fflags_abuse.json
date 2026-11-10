@@ -1,0 +1,19 @@
+{
+  "version": "2026.11.10",
+  "_comment": "Lista INICIAL de Fast Flags que a comunidade associa a vantagem indevida (desync, hitbox etc.). Revise antes de usar no seu campeonato e mantenha atualizada. Desde 29/09/2025 o Roblox ignora flags fora da allowlist oficial, então uma flag aqui só tem efeito real se estiver na allowlist ou se for aplicada por um programa externo.",
+  "flags": [
+    {"name": "DFIntS2PhysicsSenderRate", "reason": "Associada a dessincronização de física (desync)."},
+    {"name": "DFIntPhysicsSenderMaxBandwidthBps", "reason": "Limita o envio de física ao servidor; associada a desync/lag switch."},
+    {"name": "DFIntDataSenderRate", "reason": "Altera a taxa de envio de dados; associada a desync."},
+    {"name": "DFIntMaxMissedWorldStepsRemembered", "reason": "Associada a manipulação de física/desync."},
+    {"name": "DFIntAssemblyExtentsExpansionStudHundredth", "reason": "Associada a expansão de hitbox."}
+  ],
+  "suspicious_patterns": [
+    "hitbox",
+    "physicssender",
+    "senderrate",
+    "senderbandwidth",
+    "desync",
+    "lagswitch"
+  ]
+}

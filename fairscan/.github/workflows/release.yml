@@ -1,0 +1,43 @@
+name: Release
+
+# Crie uma tag (ex.: git tag v1.0.0 && git push --tags) para gerar o FairScan.exe.
+# O executável é gerado aqui, a partir do código público, e o SHA256 é publicado
+# para qualquer pessoa conferir.
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Testes
+        run: python -m unittest discover -s tests -v
+      - name: Gerar executável
+        run: |
+          python -m pip install pyinstaller==6.11.1
+          pyinstaller --onefile --name FairScan --console --add-data "fairscan/data;fairscan/data" run_fairscan.py
+      - name: Calcular SHA256
+        shell: pwsh
+        run: |
+          $h = (Get-FileHash dist/FairScan.exe -Algorithm SHA256).Hash.ToLower()
+          "$h  FairScan.exe" | Out-File -Encoding ascii dist/SHA256SUMS.txt
+          Get-Content dist/SHA256SUMS.txt
+      - name: Publicar release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/FairScan.exe
+            dist/SHA256SUMS.txt
+          body: |
+            Executável gerado automaticamente pelo GitHub Actions a partir do código desta tag.
+            Confira o SHA256 em `SHA256SUMS.txt` antes de usar. Ele deve ser igual ao campo
+            `scanner.fingerprint` dos relatórios gerados com este executável.

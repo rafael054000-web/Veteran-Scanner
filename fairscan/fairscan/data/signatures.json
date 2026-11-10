@@ -1,0 +1,50 @@
+{
+  "version": "2026.11.10",
+  "_comment": "Assinaturas por NOME (pastas, executáveis, atalhos, prefetch, registro, processos). 'confidence': high = nome bem específico; medium = nome que também pode ser outra coisa (a severidade cai um nível). A severidade de cada categoria fica em rules.json. Veja CONTRIBUTING.md antes de adicionar entradas.",
+  "programs": [
+    {"id": "synapse-x", "name": "Synapse X", "category": "executor", "confidence": "high", "names": ["synapse x", "synapsex", "synapse launcher", "synx"]},
+    {"id": "script-ware", "name": "Script-Ware", "category": "executor", "confidence": "high", "names": ["script-ware", "scriptware"]},
+    {"id": "krnl", "name": "KRNL", "category": "executor", "confidence": "high", "names": ["krnl", "krnlss", "krnl bootstrapper"]},
+    {"id": "fluxus", "name": "Fluxus", "category": "executor", "confidence": "high", "names": ["fluxus", "fluxteam"]},
+    {"id": "solara", "name": "Solara", "category": "executor", "confidence": "high", "names": ["solara", "solarabootstrapper"], "note": "Existe também um framework Python chamado 'solara'; confira o caminho."},
+    {"id": "wave", "name": "Wave", "category": "executor", "confidence": "medium", "names": ["wave", "wave executor", "getwave"], "exclude": ["waves", "wavebrowser", "wave browser", "maxxaudio"], "note": "Nome genérico: confira se não é outro software."},
+    {"id": "celery", "name": "Celery", "category": "executor", "confidence": "medium", "names": ["celery", "celeryinject"], "note": "Celery também é uma biblioteca Python popular; confira o caminho."},
+    {"id": "xeno", "name": "Xeno", "category": "executor", "confidence": "high", "names": ["xeno", "xeno executor"]},
+    {"id": "jjsploit", "name": "JJSploit", "category": "executor", "confidence": "high", "names": ["jjsploit"]},
+    {"id": "oxygen-u", "name": "Oxygen U", "category": "executor", "confidence": "high", "names": ["oxygen u", "oxygenu"]},
+    {"id": "seliware", "name": "Seliware", "category": "executor", "confidence": "high", "names": ["seliware"]},
+    {"id": "trigon", "name": "Trigon", "category": "executor", "confidence": "high", "names": ["trigon", "trigon evo", "trigonevo"]},
+    {"id": "arceus-x", "name": "Arceus X", "category": "executor", "confidence": "high", "names": ["arceus x", "arceusx", "arceus x neo"]},
+    {"id": "awp", "name": "AWP.GG", "category": "executor", "confidence": "high", "names": ["awp.gg", "awpgg", "awp executor"]},
+    {"id": "zenith", "name": "Zenith", "category": "executor", "confidence": "medium", "names": ["zenith executor", "zenith"]},
+    {"id": "velocity", "name": "Velocity", "category": "executor", "confidence": "medium", "names": ["velocity executor", "velocity"], "note": "Nome genérico (ex.: Apache Velocity)."},
+    {"id": "volcano", "name": "Volcano", "category": "executor", "confidence": "medium", "names": ["volcano executor", "volcano"]},
+    {"id": "potassium", "name": "Potassium", "category": "executor", "confidence": "medium", "names": ["potassium executor", "potassium"]},
+    {"id": "evon", "name": "Evon", "category": "executor", "confidence": "medium", "names": ["evon executor", "evon"]},
+    {"id": "delta", "name": "Delta", "category": "executor", "confidence": "high", "names": ["delta executor", "deltaexecutor"]},
+    {"id": "codex", "name": "Codex", "category": "executor", "confidence": "high", "names": ["codex executor", "codexexecutor"]},
+    {"id": "macsploit", "name": "MacSploit", "category": "executor", "confidence": "high", "names": ["macsploit"]},
+    {"id": "hydrogen", "name": "Hydrogen", "category": "executor", "confidence": "medium", "names": ["hydrogen executor", "hydrogen"]},
+
+    {"id": "extreme-injector", "name": "Extreme Injector", "category": "injector", "confidence": "high", "names": ["extreme injector", "extremeinjector"]},
+    {"id": "generic-injector", "name": "Injetor genérico", "category": "injector", "confidence": "medium", "names": [], "regex": ["^[a-z0-9]*(dll)?injector[a-z0-9]*$"], "note": "Qualquer nome terminado/contendo 'injector'. Confira o caminho."},
+
+    {"id": "cheat-engine", "name": "Cheat Engine", "category": "memory_editor", "confidence": "high", "names": ["cheat engine", "cheatengine", "cheatengine-x86_64", "cheatengine-i386", "cheatengine-x86_64-sse4-avx2"]},
+    {"id": "process-hacker", "name": "Process Hacker / System Informer", "category": "dual_use", "confidence": "high", "names": ["processhacker", "process hacker", "systeminformer", "system informer"]},
+
+    {"id": "autoclicker", "name": "Auto clicker", "category": "macro", "confidence": "medium", "names": ["autoclicker", "auto clicker", "op auto clicker", "opautoclicker", "gs auto clicker"]},
+    {"id": "autohotkey", "name": "AutoHotkey", "category": "macro", "confidence": "high", "names": ["autohotkey", "autohotkey64", "autohotkeyu64", "autohotkey32"]},
+    {"id": "tinytask", "name": "TinyTask", "category": "macro", "confidence": "high", "names": ["tinytask"]},
+
+    {"id": "bloxstrap", "name": "Bloxstrap", "category": "bootstrapper", "confidence": "high", "names": ["bloxstrap"]},
+    {"id": "fishstrap", "name": "Fishstrap", "category": "bootstrapper", "confidence": "high", "names": ["fishstrap"]},
+    {"id": "voidstrap", "name": "Voidstrap", "category": "bootstrapper", "confidence": "high", "names": ["voidstrap"]},
+    {"id": "froststrap", "name": "Froststrap", "category": "bootstrapper", "confidence": "high", "names": ["froststrap"]},
+    {"id": "lunastrap", "name": "Lunastrap", "category": "bootstrapper", "confidence": "high", "names": ["lunastrap"]},
+    {"id": "rbxfpsunlocker", "name": "Roblox FPS Unlocker", "category": "fps_unlocker", "confidence": "high", "names": ["rbxfpsunlocker", "rbx fps unlocker", "roblox fps unlocker"]},
+
+    {"id": "ccleaner", "name": "CCleaner", "category": "cleaner", "confidence": "high", "names": ["ccleaner", "ccleaner64"]},
+    {"id": "bleachbit", "name": "BleachBit", "category": "cleaner", "confidence": "high", "names": ["bleachbit"]},
+    {"id": "privazer", "name": "PrivaZer", "category": "cleaner", "confidence": "high", "names": ["privazer"]}
+  ]
+}
